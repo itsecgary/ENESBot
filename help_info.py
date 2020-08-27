@@ -1,13 +1,22 @@
 profile = '''
 `>profile me`
-info for all leaderboard commands
+display your own profile for the server
 `>profile <user>`
-print **this** help menu
+display another user's profile
+'''
+
+other = '''
+`>available`
+display which TAs and/or professors are currently holding office hours
+`>hours @<TA/Professor>`
+display the office hours for a Professor or TA with their "@"
 '''
 
 help_page = '''
 `>help profile`
-info for all leaderboard commands
+info for all profile commands
+`>help other`
+info for other commands
 `>help`
 print **this** help menu
 '''

@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands, tasks
 import string
 import json
-import requests
 import sys
 import help_info
 import traceback
@@ -27,9 +26,9 @@ class Profile(commands.Cog):
         if user is None:
             await ctx.channel.send("You must choose a profile to see")
         if user == "me":
-            await ctx.channel.send("This command is currently in progress")
+            await ctx.channel.send("The **me** command is currently in progress")
         else:
-            await ctx.channel.send("This command is currently in progress")
+            await ctx.channel.send("The **me** command is currently in progress")
 
 #################################### SETUP #####################################
 def setup(bot):
