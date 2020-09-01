@@ -97,18 +97,32 @@ async def help(ctx, page=None):
 
 @bot.command()
 async def available(ctx):
+    time = datetime.now()
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('auth.json', scope)
     client = gspread.authorize(creds)
     ss = client.open("100F20_office hours")
-    print(ss)
-    print(ss.sheet1)
-    #ss = client.open("100F20_office hours")
-    #ws = ss.worksheets()
-    #data = sheet.get_all_records()
+    sheet = ss.get_worksheet(0)
 
-    #print(ws)
-    await ctx.channel.send("The **available** command is currently in progress")
+    mon = sheet.col_values(4)[3:]
+    tue = sheet.col_values(6)[3:]
+    wed = sheet.col_values(8)[3:]
+    thu = sheet.col_values(10)[3:]
+    fri = sheet.col_values(12)[3:]
+
+    hour = time.hour
+    index = hour - 9
+
+    if hour < 22:
+        if len(mon) >= index+1:
+            print("**Available Faculty:** {}".format(mon[index]))
+            await ctx.channel.send("**Available Faculty:** {}".format(mon[index]))
+        else:
+            print("**Available Faculty:** None :(")
+            await ctx.channel.send("**Available Faculty:** None :(")
+    else:
+        print("**Available Faculty:** None :(")
+        await ctx.channel.send("**Available Faculty:** None :(")
 
 @bot.command()
 async def hours(ctx, ta_prof=None):
