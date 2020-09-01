@@ -11,7 +11,7 @@ import help_info
 ################################ DATA STRUCTURES ###############################
 bot = commands.Bot(command_prefix = '>')
 bot.remove_command('help')
-extensions = ['profile']
+extensions = []
 
 #################################### EVENTS ####################################
 @bot.event # Show banner and add members to respective guilds in db
