@@ -84,15 +84,8 @@ async def on_message(ctx):
 ################################ OTHER FUNCTIONS ###############################
 @bot.command()
 async def help(ctx, page=None):
-    if page == 'profile':
-        emb = discord.Embed(description=help_info.profile, colour=discord.Colour.orange())
-        emb.set_author(name='Profile Help')
-    elif page == 'other':
-        emb = discord.Embed(description=help_info.other, colour=discord.Colour.orange())
-        emb.set_author(name='Other Help')
-    else:
-        emb = discord.Embed(description=help_info.help_page, colour=discord.Colour.orange())
-        emb.set_author(name='ENESBot Help')
+    emb = discord.Embed(description=help_info.help_page, colour=discord.Colour.orange())
+    emb.set_author(name='ENESBot Help')
     await ctx.channel.send(embed=emb)
 
 @bot.command()
@@ -104,19 +97,38 @@ async def available(ctx):
     ss = client.open("100F20_office hours")
     sheet = ss.get_worksheet(0)
 
+    tas = sheet.col_values(2)[18:]
+    zooms = sheet.col_values(5)[18:]
     mon = sheet.col_values(4)[3:]
     tue = sheet.col_values(6)[3:]
     wed = sheet.col_values(8)[3:]
     thu = sheet.col_values(10)[3:]
     fri = sheet.col_values(12)[3:]
+    days = [mon, tue, wed, thu, fri]
 
     hour = time.hour
     index = hour - 9
+    day = time.weekday()
 
-    if hour < 22:
-        if len(mon) >= index+1:
-            print("**Available Faculty:** {}".format(mon[index]))
-            await ctx.channel.send("**Available Faculty:** {}".format(mon[index]))
+    if hour < 22 and day < 4:
+        #print(index)
+        if len(days[day]) >= index+1:
+            link = ""
+            message = "**Available Faculty:** "
+            avail = days[day][index].split(",\n")
+            for person in avail:
+                for name in tas:
+                    if (person in name) and not person == "":
+                        person = name
+                if person in tas:
+                    index = tas.index(person)
+                    message = message + person + "\n" + zooms[index]
+                else:
+                    message = message + "None :("
+                    break
+
+            print(message)
+            await ctx.channel.send(message)
         else:
             print("**Available Faculty:** None :(")
             await ctx.channel.send("**Available Faculty:** None :(")
