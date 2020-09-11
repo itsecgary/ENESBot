@@ -112,9 +112,10 @@ async def available(ctx):
 
     if hour < 22 and day < 4:
         #print(index)
+        #print(days[day])
         if len(days[day]) >= index+1:
             link = ""
-            message = "**Available Faculty:** "
+            message = "**Available Faculty:** \n"
             avail = days[day][index].split(",\n")
             for person in avail:
                 for name in tas:
@@ -124,9 +125,12 @@ async def available(ctx):
                     index = tas.index(person)
                     message = message + person + "\n" + zooms[index]
                 else:
-                    message = message + "None :("
+                    message = message + person
                     break
+                message += "\n"
 
+            if message == "**Available Faculty:** \n" or message == "**Available Faculty:** \n\n":
+                message += "None :("
             print(message)
             await ctx.channel.send(message)
         else:
