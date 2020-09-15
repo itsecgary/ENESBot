@@ -77,6 +77,21 @@ async def on_member_remove(member):
             return
 
 @bot.event
+async def on_member_update(before, after):
+    if len(before.roles) < len(after.roles):
+        new_role = next(role for role in after.roles if role not in before.roles)
+        if new_role.name in ('Level 1  Mastermind', 'Level 2 Mastermind', 'Level 1 Technomancer', 'Level 2 Technomancer'):
+            fmt = "{0.mention} has reached `{1}`! :confetti_ball:"
+            channel = bot.get_channel(755199728664444989)
+            await channel.send(fmt.format(after, new_role.name))
+            print(fmt.format(after, new_role.name))
+        print("{}'s role received the {} role".format(after.name, new_role.name))
+    elif len(after.roles) < len(before.roles):
+        lost_role = next(role for role in before.roles if role not in after.roles)
+        print("{}'s role lost the {} role".format(after.name, lost_role.name))
+
+
+@bot.event
 async def on_message(ctx):
     #if str(ctx.channel.type) == "private" or str(ctx.guild.id) == '734854267847966720' or ctx.channel.name == 'ctf-bot-dev':
     await bot.process_commands(ctx)
