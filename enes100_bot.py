@@ -43,7 +43,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         return
     if isinstance(error, commands.MissingRequiredArgument):
-        msg += "Missing a required argument.  Do !help\n"
+        msg += "Missing a required argument.  Do >help\n"
     if isinstance(error, commands.MissingPermissions):
         msg += "You do not have the appropriate permissions to run this command.\n"
     if isinstance(error, commands.BotMissingPermissions):
@@ -131,11 +131,14 @@ async def available(ctx, option):
     if option == 'OO':
         day_index += 1
 
+    print(sheet.col_values(day_index)[5:])
+    print(len(sheet.col_values(day_index)[5:]))
+    print(index+1)
     if hour < 22 and day != 5: # if not saturday and is before 10pm
         if len(sheet.col_values(day_index)[5:]) >= index+1:
             link = ""
             message = "**Available Faculty:** \n"
-            avail = sheet.col_values(day_index)[5:][index].split(",\n")
+            avail = sheet.col_values(day_index)[5:][index].split(",")
 
             for person in avail:
                 for name in tas:
@@ -143,12 +146,13 @@ async def available(ctx, option):
                         person = name
                 if person in tas:
                     index = tas.index(person)
-                    message = message + person + "\n" + zooms[index]
+                    message = message + person + "\n" + '<' + zooms[index] + '>\n'
                 else:
                     message = message + person
                     break
                 message += "\n"
 
+            print(sheet.col_values(day_index)[5:][0])
             if 'UMD' in sheet.col_values(day_index)[5:][0] and option == 'IP':
                 message = sheet.col_values(day_index)[5:][0]
             elif message == "**Available Faculty:** \n" or len(avail[0]) == 0:
@@ -157,8 +161,11 @@ async def available(ctx, option):
             print(message)
             await ctx.channel.send(message)
         else:
-            print("**Available Faculty:** None :(")
-            await ctx.channel.send("**Available Faculty:** None :(")
+            message = "**Available Faculty:** None :("
+            if 'UMD' in sheet.col_values(day_index)[5:][0] and option == 'IP':
+                message = sheet.col_values(day_index)[5:][0]
+            print(message)
+            await ctx.channel.send(message)
     else:
         print("**Available Faculty:** None :(")
         await ctx.channel.send("**Available Faculty:** None :(")
