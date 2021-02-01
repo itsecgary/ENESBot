@@ -90,7 +90,6 @@ async def on_member_update(before, after):
         lost_role = next(role for role in before.roles if role not in after.roles)
         print("{}'s role lost the {} role".format(after.name, lost_role.name))
 
-
 @bot.event
 async def on_message(ctx):
     #if str(ctx.channel.type) == "private" or str(ctx.guild.id) == '734854267847966720' or ctx.channel.name == 'ctf-bot-dev':
@@ -104,34 +103,40 @@ async def help(ctx, page=None):
     await ctx.channel.send(embed=emb)
 
 @bot.command()
-async def available(ctx):
+async def available(ctx, option):
+    if option not in ['IP', 'OO']:
+        await ctx.channel.send("Invalid argument")
+        return
+
     time = datetime.now()
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('auth.json', scope)
     client = gspread.authorize(creds)
-    ss = client.open("100F20_office hours")
+    ss = client.open("100S21 Office Hours")
     sheet = ss.get_worksheet(0)
 
     tas = sheet.col_values(2)[18:]
     zooms = sheet.col_values(5)[18:]
-    mon = sheet.col_values(4)[3:]
-    tue = sheet.col_values(6)[3:]
-    wed = sheet.col_values(8)[3:]
-    thu = sheet.col_values(10)[3:]
-    fri = sheet.col_values(12)[3:]
-    days = [mon, tue, wed, thu, fri]
 
     hour = time.hour
     index = hour - 9
     day = time.weekday()
+    day_index = 0
 
-    if hour < 22 and day < 4:
-        #print(index)
-        #print(days[day])
-        if len(days[day]) >= index+1:
+    if day == 6: # get the correct index for day in spreadsheet
+        day_index = 2
+    else:
+        day_index = (day*2) + 4
+
+    if option == 'OO':
+        day_index += 1
+
+    if hour < 22 and day != 5: # if not saturday and is before 10pm
+        if len(sheet.col_values(day_index)[5:]) >= index+1:
             link = ""
             message = "**Available Faculty:** \n"
-            avail = days[day][index].split(",\n")
+            avail = sheet.col_values(day_index)[5:][index].split(",\n")
+
             for person in avail:
                 for name in tas:
                     if (person in name) and not person == "":
@@ -144,8 +149,11 @@ async def available(ctx):
                     break
                 message += "\n"
 
-            if message == "**Available Faculty:** \n" or message == "**Available Faculty:** \n\n":
-                message += "None :("
+            if 'UMD' in sheet.col_values(day_index)[5:][0] and option == 'IP':
+                message = sheet.col_values(day_index)[5:][0]
+            elif message == "**Available Faculty:** \n" or len(avail[0]) == 0:
+                message = "**Available Faculty:** None :("
+
             print(message)
             await ctx.channel.send(message)
         else:
