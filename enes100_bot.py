@@ -7,6 +7,7 @@ from discord.ext import commands, tasks
 from itertools import cycle
 from config_vars import *
 import help_info
+import pytz
 
 ################################ DATA STRUCTURES ###############################
 bot = commands.Bot(command_prefix = '>')
@@ -109,6 +110,8 @@ async def available(ctx, option):
         return
 
     time = datetime.now()
+    timezone = pytz.timezone("America/New_York")
+    time = timezone.localize(time)
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('auth.json', scope)
     client = gspread.authorize(creds)
@@ -152,7 +155,6 @@ async def available(ctx, option):
                     break
                 message += "\n"
 
-            print(sheet.col_values(day_index)[5:][0])
             if 'UMD' in sheet.col_values(day_index)[5:][0] and option == 'IP':
                 message = sheet.col_values(day_index)[5:][0]
             elif message == "**Available Faculty:** \n" or len(avail[0]) == 0:
