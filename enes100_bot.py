@@ -109,15 +109,19 @@ async def available(ctx, option):
         await ctx.channel.send("Invalid argument")
         return
 
-    time = datetime.now()
-    timezone = pytz.timezone("America/New_York")
-    time = timezone.localize(time)
+    # Fixing timezone to Eastern only
+    oldtime = datetime.now()
+    eastern = pytz.timezone("US/Eastern")
+    time = oldtime.astimezone(eastern)
+
+    # Connecting to office hour spreadsheet using Google Sheets API
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('auth.json', scope)
     client = gspread.authorize(creds)
     ss = client.open("100S21 Office Hours")
     sheet = ss.get_worksheet(0)
 
+    # Getting names and zoom links
     tas = sheet.col_values(2)[18:]
     zooms = sheet.col_values(5)[18:]
 
@@ -126,7 +130,8 @@ async def available(ctx, option):
     day = time.weekday()
     day_index = 0
 
-    if day == 6: # get the correct index for day in spreadsheet
+    # get the correct index for day in spreadsheet
+    if day == 6:
         day_index = 2
     else:
         day_index = (day*2) + 4
@@ -134,9 +139,7 @@ async def available(ctx, option):
     if option == 'OO':
         day_index += 1
 
-    print(sheet.col_values(day_index)[5:])
-    print(len(sheet.col_values(day_index)[5:]))
-    print(index+1)
+    # Composing message with TA names and zoom links for those available
     if hour < 22 and day != 5: # if not saturday and is before 10pm
         if len(sheet.col_values(day_index)[5:]) >= index+1:
             link = ""
