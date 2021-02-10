@@ -93,6 +93,12 @@ async def on_member_update(before, after):
 
 @bot.event
 async def on_message(ctx):
+    if 'enesbot' in ctx.content.lower():
+        await ctx.channel.send("who said my name")
+    elif 'bad bot' in ctx.content.lower():
+        await ctx.channel.send("no u")
+    elif 'good bot' in ctx.content.lower():
+        await ctx.channel.send("thank")
     #if str(ctx.channel.type) == "private" or str(ctx.guild.id) == '734854267847966720' or ctx.channel.name == 'ctf-bot-dev':
     await bot.process_commands(ctx)
 
