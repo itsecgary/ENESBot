@@ -100,6 +100,8 @@ async def on_message(ctx):
         await ctx.channel.send("no u")
     elif 'good bot' in ctx.content.lower():
         await ctx.channel.send("thank")
+    elif 'LTF' in ctx.content:
+        await ctx.channel.send("LTF > UTF")
     #if str(ctx.channel.type) == "private" or str(ctx.guild.id) == '734854267847966720' or ctx.channel.name == 'ctf-bot-dev':
     await bot.process_commands(ctx)
 
@@ -139,11 +141,14 @@ async def available(ctx, option):
     day = time.weekday()
     day_index = 0
 
-    # get the correct index for day in spreadsheet
-    if day == 6:
-        day_index = 1
+    if datetime.now().timetuple().tm_yday < 249:
+        day_index = ((day)*5) + 1
     else:
-        day_index = ((day+1)*5) + 1
+        # get the correct index for day in spreadsheet
+        if day == 6:
+            day_index = 1
+        else:
+            day_index = ((day+1)*5) + 1
 
     print(f'hour = {hour}')
     print(f'day = {day}')
@@ -160,29 +165,65 @@ async def available(ctx, option):
         loop = 2
 
     # Composing message with TA names and zoom links for those available
-    for i in range(loop):
-        if hour < 22 and day != 5: # if not saturday and is before 10pm
-            if len(sheet.col_values(day_index)[4:]) >= index+1:
-                link = ""
-                message = "**Available Faculty:** \n"
-                avail = sheet.col_values(day_index)[4:][index].split(",")
-
-                for person in avail:
-                    message += person.strip() + "\n"
-
-                if message == "**Available Faculty:** \n" or len(avail[0]) == 0:
-                    message = "**Available Faculty:** None :("
-
-                print(message)
-                await ctx.channel.send(message)
+    if option == "OL":
+        if hour < 19 and day != 5 and hour != 9:
+            message = "**JMP1201 (small lab)**: "
+            if day == 0 or day == 2 or hour < 16:
+                print(sheet.col_values(day_index)[4:][1])
+                message += sheet.col_values(day_index)[4:][1]
             else:
-                message = "**Available Faculty:** None :("
-                print(message)
-                await ctx.channel.send(message)
+                avail = ''
+                if len(sheet.col_values(day_index)[4:]) >= index+1:
+                    avail = sheet.col_values(day_index)[4:][index]
+                    message += avail
+                if len(avail) == 0:
+                    message += 'none :('
+
+            message += "\n**JMP1120 (big lab)**: "
+            print(sheet.col_values(day_index+1)[4:][1])
+            if hour < 16:
+                print(sheet.col_values(day_index+1)[4:][1])
+                message += sheet.col_values(day_index+1)[4:][1]
+            else:
+                avail = ''
+                if len(sheet.col_values(day_index+1)[4:]) >= index+1:
+                    avail = sheet.col_values(day_index+1)[4:][index]
+                    message += avail
+                if len(avail) == 0:
+                    message += 'none :('
+
+        elif hour < 22 and day != 5: # if not saturday and is before 10pm
+            message = "**JMP1201 (small lab)**: "
+            print(sheet.col_values(day_index)[4:])
+            if len(sheet.col_values(day_index)[4:]) >= index+1:
+                avail = sheet.col_values(day_index)[4:][index]
+                message += avail
+            if len(avail) == 0:
+                message += 'none :('
+
+            message += "\n**JMP1120 (big lab)**: "
+            print(sheet.col_values(day_index+1)[4:])
+            if len(sheet.col_values(day_index+1)[4:]) >= index+1:
+                avail = sheet.col_values(day_index+1)[4:][index]
+                message += avail
+            if len(avail) == 0:
+                message += 'none :('
         else:
-            print("**Available Faculty:** None :(")
-            await ctx.channel.send("**Available Faculty:** None :(")
-        day_index += 1
+            message = "No one be in the labs :("
+    else:
+        if hour < 22 and day != 5: # if not saturday and is before 10pm
+            link = ""
+            message = "**Available Faculty:** "
+            if len(sheet.col_values(day_index)[4:]) >= index+1:
+                avail = sheet.col_values(day_index)[4:][index]
+                message += str(avail)
+            if len(avail) == 0:
+                message += "none :("
+        else:
+            message = "**Available Faculty:** None :("
+
+    print(message)
+    await ctx.channel.send(message)
 
 @bot.command()
 async def hours(ctx, ta_prof=None):
@@ -191,6 +232,18 @@ async def hours(ctx, ta_prof=None):
     else:
         print(ta_prof)
         await ctx.channel.send("The **hours** command is currently in progress")
+
+@bot.command()
+async def officehours(ctx, cclass):
+    classes = {"enes100": "<https://docs.google.com/spreadsheets/d/1Y6pVgPkDEDIOop94Z1x8-HsUthPRjajxAIBWD-TyK4E>",
+               "enes102": "<https://docs.google.com/spreadsheets/u/1/d/1wBB8DZxcPUTl5dWyulhcDJzZ6Z7dNyI4C0kNqSBvnL4/preview>"}
+
+    if cclass.lower() == "enes100":
+        await ctx.channel.send(classes[cclass.lower()])
+    elif cclass.lower() == "enes102":
+        await ctx.channel.send(classes[cclass.lower()])
+    else:
+        await ctx.channel.send("Class not found")
 
 ##################################### MAIN #####################################
 if __name__ == '__main__': # Loads cog extentions and starts up the bot
