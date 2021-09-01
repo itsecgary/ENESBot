@@ -96,12 +96,17 @@ async def on_member_update(before, after):
 async def on_message(ctx):
     if 'enesbot' in ctx.content.lower():
         await ctx.channel.send("who said my name")
+    elif 'ltf' in ctx.content.lower() and 'utf' in ctx.content.lower() and '>' in ctx.content.lower() and ctx.content.lower().find('ltf') < ctx.content.lower().find('utf'):
+        await ctx.channel.send("yes")
+    elif 'ltf' in ctx.content.lower() and 'utf' in ctx.content.lower() and '>' in ctx.content.lower() and ctx.content.lower().find('ltf') > ctx.content.lower().find('utf'):
+        await ctx.channel.send("no")
+    elif 'ltf' in ctx.content.lower() and 'utf' in ctx.content.lower() and '=' in ctx.content.lower():
+        await ctx.channel.send("maybe")
     elif 'bad bot' in ctx.content.lower():
         await ctx.channel.send("no u")
     elif 'good bot' in ctx.content.lower():
         await ctx.channel.send("thank")
-    elif 'LTF' in ctx.content:
-        await ctx.channel.send("LTF > UTF")
+
     #if str(ctx.channel.type) == "private" or str(ctx.guild.id) == '734854267847966720' or ctx.channel.name == 'ctf-bot-dev':
     await bot.process_commands(ctx)
 
