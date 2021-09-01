@@ -25,6 +25,7 @@ async def on_ready():
 
     # Create current member info
     for guild in bot.guilds:
+        break
         print("\n----------------------- {} -----------------------".format(guild.name))
         member_cnt = 0
         for member in guild.members:
@@ -111,7 +112,7 @@ async def help(ctx, page=None):
 
 @bot.command()
 async def available(ctx, option):
-    if option not in ['IP', 'OO']:
+    if option not in ['IP', 'OOO', 'OL']:
         await ctx.channel.send("Invalid argument")
         return
 
@@ -122,14 +123,16 @@ async def available(ctx, option):
 
     # Connecting to office hour spreadsheet using Google Sheets API
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name('auth.json', scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name('enesbot-2dfbe5f92e4b.json', scope)
     client = gspread.authorize(creds)
-    ss = client.open("100S21 Office Hours")
+    ss = client.open("100F21 Office Hours")
     sheet = ss.get_worksheet(0)
 
-    # Getting names and zoom links
-    tas = sheet.col_values(2)[18:]
-    zooms = sheet.col_values(5)[18:]
+    print(sheet.col_values(11)[4:])
+    print(sheet.col_values(12)[4:])
+    print(sheet.col_values(13)[4:])
+    print(sheet.col_values(14)[4:])
+    print(sheet.col_values(15)[4:])
 
     hour = time.hour
     index = hour - 9
@@ -138,48 +141,48 @@ async def available(ctx, option):
 
     # get the correct index for day in spreadsheet
     if day == 6:
-        day_index = 2
+        day_index = 1
     else:
-        day_index = (day*2) + 4
+        day_index = ((day+1)*5) + 1
 
-    if option == 'OO':
+    print(f'hour = {hour}')
+    print(f'day = {day}')
+    print(day_index)
+
+    # Getting names and zoom links
+    loop = 1
+    if option == 'OOO':
+        day_index += 4
+    elif option == 'IP':
+        day_index += 3
+    else:
         day_index += 1
+        loop = 2
 
     # Composing message with TA names and zoom links for those available
-    if hour < 22 and day != 5: # if not saturday and is before 10pm
-        if len(sheet.col_values(day_index)[5:]) >= index+1:
-            link = ""
-            message = "**Available Faculty:** \n"
-            avail = sheet.col_values(day_index)[5:][index].split(",")
+    for i in range(loop):
+        if hour < 22 and day != 5: # if not saturday and is before 10pm
+            if len(sheet.col_values(day_index)[4:]) >= index+1:
+                link = ""
+                message = "**Available Faculty:** \n"
+                avail = sheet.col_values(day_index)[4:][index].split(",")
 
-            for person in avail:
-                for name in tas:
-                    if (person in name) and not person == "":
-                        person = name
-                if person in tas:
-                    index = tas.index(person)
-                    message = message + person + "\n" + '<' + zooms[index] + '>\n'
-                else:
-                    message = message + person
-                    break
-                message += "\n"
+                for person in avail:
+                    message += person.strip() + "\n"
 
-            if 'UMD' in sheet.col_values(day_index)[5:][0] and option == 'IP':
-                message = sheet.col_values(day_index)[5:][0]
-            elif message == "**Available Faculty:** \n" or len(avail[0]) == 0:
+                if message == "**Available Faculty:** \n" or len(avail[0]) == 0:
+                    message = "**Available Faculty:** None :("
+
+                print(message)
+                await ctx.channel.send(message)
+            else:
                 message = "**Available Faculty:** None :("
-
-            print(message)
-            await ctx.channel.send(message)
+                print(message)
+                await ctx.channel.send(message)
         else:
-            message = "**Available Faculty:** None :("
-            if 'UMD' in sheet.col_values(day_index)[5:][0] and option == 'IP':
-                message = sheet.col_values(day_index)[5:][0]
-            print(message)
-            await ctx.channel.send(message)
-    else:
-        print("**Available Faculty:** None :(")
-        await ctx.channel.send("**Available Faculty:** None :(")
+            print("**Available Faculty:** None :(")
+            await ctx.channel.send("**Available Faculty:** None :(")
+        day_index += 1
 
 @bot.command()
 async def hours(ctx, ta_prof=None):
@@ -188,29 +191,6 @@ async def hours(ctx, ta_prof=None):
     else:
         print(ta_prof)
         await ctx.channel.send("The **hours** command is currently in progress")
-
-def add_member(member, guild):
-    time = int(member.joined_at.replace(tzinfo=timezone.utc).timestamp())
-    unix_now = int(datetime.utcnow().replace(tzinfo=timezone.utc).timestamp())
-    diff = int((unix_now - time)/(60*60*24))
-
-    member_info = {
-        "name": member.name + '#' + member.discriminator,
-        "display_name": member.nick,
-        "num_messages": 0,
-        "num_reactions": 0,
-        "days_on_server": diff,
-    }
-
-    m = infodb['members'].find_one({'name': member_info['name']})
-    if not member.bot:
-        infodb['members'].update_one({"name": member.name}, {"$set": member_info}, upsert=True)
-        print("[+] Added member {} to database of {}".format(member, guild.name))
-    else:
-        if member.bot:
-            print("[/] Member {} not added - bot".format(member.name))
-        else:
-            print("[/] Member {} not added - already exists".format(member.name))
 
 ##################################### MAIN #####################################
 if __name__ == '__main__': # Loads cog extentions and starts up the bot

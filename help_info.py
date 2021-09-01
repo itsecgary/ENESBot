@@ -1,7 +1,7 @@
 help_page = '''
 `>available <option>`
 display which TAs and/or professors are currently holding office hours
-Options: **OO (online only)**, **IP (in-person)**
+Options: **OO (online office hours)**, **IP (in-person office hours)**, **OL (open-lab)**
 `>hours @<TA/Professor>`
 display the office hours for a Professor or TA with their "@"
 `>help`
